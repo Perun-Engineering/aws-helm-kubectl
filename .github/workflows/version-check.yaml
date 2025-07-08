@@ -1,0 +1,169 @@
+name: Version Check
+
+on:
+  schedule:
+    # Check for new versions every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for new versions
+        id: version-check
+        run: |
+          echo "Checking for new versions..."
+
+          # Function to get latest GitHub release
+          get_latest_release() {
+            curl -s "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed 's/^v//'
+          }
+
+          # Function to get latest Alpine version
+          get_latest_alpine() {
+            curl -s "https://registry.hub.docker.com/v2/repositories/library/alpine/tags/?page_size=100" | \
+            jq -r '.results[].name' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1
+          }
+
+          # Function to get latest Kubernetes version
+          get_latest_kubernetes() {
+            curl -s "https://api.github.com/repos/kubernetes/kubernetes/releases/latest" | jq -r '.tag_name' | sed 's/^v//'
+          }
+
+          # Read current versions
+          source .env
+
+          # Check versions
+          LATEST_ALPINE=$(get_latest_alpine)
+          LATEST_HELM=$(get_latest_release "helm/helm")
+          LATEST_KUBERNETES=$(get_latest_kubernetes)
+          LATEST_SOPS=$(get_latest_release "getsops/sops")
+          LATEST_HELM_SECRETS=$(get_latest_release "jkroepke/helm-secrets")
+          LATEST_HELMFILE=$(get_latest_release "helmfile/helmfile")
+          LATEST_HELM_DIFF=$(get_latest_release "databus23/helm-diff")
+
+          echo "Current versions:"
+          echo "Alpine: $ALPINE_VERSION"
+          echo "Helm: $HELM_VERSION"
+          echo "SOPS: $SOPS_VERSION"
+          echo "Helm Secrets: $HELM_SECRETS_VERSION"
+          echo "Helmfile: $HELMFILE_VERSION"
+          echo "Helm Diff: $HELM_DIFF_VERSION"
+
+          echo "Latest versions:"
+          echo "Alpine: $LATEST_ALPINE"
+          echo "Helm: $LATEST_HELM"
+          echo "Kubernetes: $LATEST_KUBERNETES"
+          echo "SOPS: $LATEST_SOPS"
+          echo "Helm Secrets: $LATEST_HELM_SECRETS"
+          echo "Helmfile: $LATEST_HELMFILE"
+          echo "Helm Diff: $LATEST_HELM_DIFF"
+
+          # Check if updates are needed
+          UPDATES_NEEDED=""
+
+          if [ "$ALPINE_VERSION" != "$LATEST_ALPINE" ]; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- Alpine: $ALPINE_VERSION → $LATEST_ALPINE"
+          fi
+
+          if [ "$HELM_VERSION" != "$LATEST_HELM" ]; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- Helm: $HELM_VERSION → $LATEST_HELM"
+          fi
+
+          if [ "$SOPS_VERSION" != "$LATEST_SOPS" ]; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- SOPS: $SOPS_VERSION → $LATEST_SOPS"
+          fi
+
+          if [ "$HELM_SECRETS_VERSION" != "$LATEST_HELM_SECRETS" ]; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- Helm Secrets: $HELM_SECRETS_VERSION → $LATEST_HELM_SECRETS"
+          fi
+
+          if [ "$HELMFILE_VERSION" != "$LATEST_HELMFILE" ]; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- Helmfile: $HELMFILE_VERSION → $LATEST_HELMFILE"
+          fi
+
+          if [ "$HELM_DIFF_VERSION" != "$LATEST_HELM_DIFF" ]; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- Helm Diff: $HELM_DIFF_VERSION → $LATEST_HELM_DIFF"
+          fi
+
+          # Check if new Kubernetes version should be added
+          CURRENT_KUBE_VERSIONS=$(echo $KUBERNETES_VERSIONS | jq -r '.[]' | sort -V)
+          LATEST_KUBE_MAJOR_MINOR=$(echo $LATEST_KUBERNETES | cut -d. -f1-2)
+
+          if ! echo "$CURRENT_KUBE_VERSIONS" | grep -q "^$LATEST_KUBE_MAJOR_MINOR"; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- Kubernetes: Add version $LATEST_KUBERNETES"
+          fi
+
+          if [ -n "$UPDATES_NEEDED" ]; then
+            echo "updates_needed=true" >> $GITHUB_OUTPUT
+            echo "updates_list<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$UPDATES_NEEDED" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "updates_needed=false" >> $GITHUB_OUTPUT
+            echo "All versions are up to date!"
+          fi
+
+      - name: Create Issue for Version Updates
+        if: steps.version-check.outputs.updates_needed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🔄 Version Updates Available - ${new Date().toISOString().split('T')[0]}`;
+            const body = `## Version Updates Available
+
+            The following components have new versions available:
+
+            ${{ steps.version-check.outputs.updates_list }}
+
+            ## Action Required
+
+            Please review and update the versions in the \`.env\` file, then test the changes.
+
+            ## Automated Check
+
+            This issue was created automatically by the version check workflow.
+
+            ---
+
+            **Workflow:** \`${{ github.workflow }}\`
+            **Run ID:** \`${{ github.run_id }}\`
+            **Triggered:** \`${{ github.event_name }}\``;
+
+            // Check if there's already an open issue for version updates
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'version-update'
+            });
+
+            const existingIssue = issues.data.find(issue =>
+              issue.title.includes('Version Updates Available')
+            );
+
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                title: title,
+                body: body
+              });
+              console.log(`Updated existing issue #${existingIssue.number}`);
+            } else {
+              // Create new issue
+              const issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['version-update', 'enhancement']
+              });
+              console.log(`Created new issue #${issue.data.number}`);
+            }

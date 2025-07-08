@@ -30,4 +30,68 @@ All current images include the following tools:
 
 Pull the specific kubectl version you need:
 ```bash
-docker pull opsworksco/aws-helm-kubectl:1.31.4
+docker pull perunengineering/aws-helm-kubectl:1.33.2
+```
+
+Or from GitHub Container Registry:
+```bash
+docker pull ghcr.io/perun-engineering/aws-helm-kubectl:1.33.2
+```
+
+## Examples
+
+### Basic Usage
+```bash
+# Run with AWS credentials from environment
+docker run --rm -it \
+  -e AWS_ACCESS_KEY_ID \
+  -e AWS_SECRET_ACCESS_KEY \
+  -e AWS_DEFAULT_REGION \
+  perunengineering/aws-helm-kubectl:1.33.2 \
+  kubectl get nodes
+```
+
+### Mount kubeconfig
+```bash
+# Mount your kubeconfig file
+docker run --rm -it \
+  -v ~/.kube:/home/appuser/.kube:ro \
+  perunengineering/aws-helm-kubectl:1.33.2 \
+  kubectl get pods
+```
+
+### Interactive Shell
+```bash
+# Start an interactive shell
+docker run --rm -it \
+  -v $(pwd):/workspace \
+  perunengineering/aws-helm-kubectl:1.33.2 \
+  /bin/bash
+```
+
+## Security
+
+This image runs as a non-root user (`appuser`) for enhanced security. The working directory is `/config` and is owned by the `appuser`.
+
+## Health Check
+
+The image includes a health check that verifies all tools are working correctly:
+- kubectl version check
+- helm version check
+- aws version check
+
+## Building Locally
+
+```bash
+# Build for specific Kubernetes version
+make docker_build KUBE_VERSION=1.33.2
+
+# Build for all supported versions
+make docker_build_all
+
+# Test the built image
+make docker_test KUBE_VERSION=1.33.2
+
+# Run security scan
+make security_scan KUBE_VERSION=1.33.2
+```

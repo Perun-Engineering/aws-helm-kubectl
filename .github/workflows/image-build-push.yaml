@@ -9,7 +9,8 @@ on:
     types: [published, edited]
 
 env:
-  REGISTRY_IMAGE: opsworksco/aws-helm-kubectl
+  DOCKERHUB_IMAGE: perunengineering/aws-helm-kubectl
+  GHCR_IMAGE: ghcr.io/perun-engineering/aws-helm-kubectl
 
 jobs:
   define:
@@ -25,26 +26,57 @@ jobs:
                 # Extract only the KUBERNETES_VERSIONS line and get the array part
                 VERSIONS=$(grep '^KUBERNETES_VERSIONS=' .env | cut -d'=' -f2-)
                 echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
+
+  security-check:
+    runs-on: ubuntu-latest
+    needs: define
+    strategy:
+      matrix:
+        version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Read environment file
+        run: cat .env >> ${GITHUB_ENV}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build test image for security scan
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: test-image:${{ matrix.version }}
+          build-args: |
+            KUBE_VERSION=${{ matrix.version }}
+            HELM_VERSION=${{ env.HELM_VERSION }}
+            SOPS_VERSION=${{ env.SOPS_VERSION }}
+            HELM_SECRETS_VERSION=${{ env.HELM_SECRETS_VERSION }}
+            HELM_S3_VERSION=${{ env.HELM_S3_VERSION }}
+            HELMFILE_VERSION=${{ env.HELMFILE_VERSION }}
+            AWS_CLI_VERSION=${{ env.AWS_CLI_VERSION }}
+            HELM_DIFF_VERSION=${{ env.HELM_DIFF_VERSION }}
+            ALPINE_PYTHON=${{ env.ALPINE_PYTHON }}
+            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: test-image:${{ matrix.version }}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
   build:
     needs:
     - define
+    - security-check
     strategy:
       fail-fast: true
       matrix:
-        os: [selfhosted-aws-helm-kubectl-arm, ubuntu-latest]
-        platforms: [linux/amd64,linux/arm64]
-        include:
-          - os: selfhosted-aws-helm-kubectl-arm
-            platforms: linux/arm64
-          - os: ubuntu-latest
-            platforms: linux/amd64
-        exclude:
-          - os: selfhosted-aws-helm-kubectl-arm
-            platforms: linux/amd64
-          - os: ubuntu-latest
-            platforms: linux/arm64
+        platform:
+          - linux/amd64
+          - linux/arm64
         version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
-    runs-on: ${{matrix.os}}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,18 +86,36 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to DockerHub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.DOCKERHUB_IMAGE }}
+            ${{ env.GHCR_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: ${{ matrix.platforms }}
-          outputs: type=image,name=${{ env.REGISTRY_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ env.DOCKERHUB_IMAGE }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
             KUBE_VERSION=${{ matrix.version }}
             HELM_VERSION=${{ env.HELM_VERSION }}
@@ -78,6 +128,8 @@ jobs:
             ALPINE_PYTHON=${{ env.ALPINE_PYTHON }}
             ALPINE_VERSION=${{ env.ALPINE_VERSION }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Export digest
         run: |
           mkdir -p /tmp/digests
@@ -89,6 +141,67 @@ jobs:
         with:
           name: digests-${{ matrix.version }}-${{ strategy.job-index }}
           path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+  build-ghcr:
+    needs:
+    - define
+    - security-check
+    strategy:
+      fail-fast: true
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+        version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Read environment file
+        run: cat .env >> ${GITHUB_ENV}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push by digest (GHCR)
+        id: build-ghcr
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ env.GHCR_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          build-args: |
+            KUBE_VERSION=${{ matrix.version }}
+            HELM_VERSION=${{ env.HELM_VERSION }}
+            SOPS_VERSION=${{ env.SOPS_VERSION }}
+            HELM_SECRETS_VERSION=${{ env.HELM_SECRETS_VERSION }}
+            HELM_S3_VERSION=${{ env.HELM_S3_VERSION }}
+            HELMFILE_VERSION=${{ env.HELMFILE_VERSION }}
+            AWS_CLI_VERSION=${{ env.AWS_CLI_VERSION }}
+            HELM_DIFF_VERSION=${{ env.HELM_DIFF_VERSION }}
+            ALPINE_PYTHON=${{ env.ALPINE_PYTHON }}
+            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Export digest (GHCR)
+        run: |
+          mkdir -p /tmp/digests-ghcr
+          digest="${{ steps.build-ghcr.outputs.digest }}"
+          echo "$digest" | sed 's/^sha256://' > "/tmp/digests-ghcr/${digest#sha256:}"
+
+      - name: Upload digest (GHCR)
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-ghcr-${{ matrix.version }}-${{ strategy.job-index }}
+          path: /tmp/digests-ghcr/*
           if-no-files-found: error
           retention-days: 1
 
@@ -117,16 +230,82 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Create manifest list and push
+      - name: Create manifest list and push (Docker Hub)
         run: |
           # First verify the directory and files exist
           ls -la /tmp/digests
 
           # Create the manifest list
           cd /tmp/digests
-          docker buildx imagetools create -t ${{ env.REGISTRY_IMAGE }}:${{ matrix.version }} \
-            $(for digest in *; do echo -n "${{ env.REGISTRY_IMAGE }}@sha256:$digest "; done)
+          docker buildx imagetools create -t ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }} \
+            $(for digest in *; do echo -n "${{ env.DOCKERHUB_IMAGE }}@sha256:$digest "; done)
 
-      - name: Inspect image
+      - name: Inspect image (Docker Hub)
         run: |
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ matrix.version }}
+          docker buildx imagetools inspect ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }}
+
+      - name: Test final image (Docker Hub)
+        run: |
+          echo "Testing final image functionality..."
+          docker run --rm ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }} /bin/bash -c "
+            echo 'Testing tool versions:' &&
+            kubectl version --client &&
+            helm version &&
+            aws --version &&
+            sops --version &&
+            helmfile --version &&
+            echo 'All tools working correctly!'
+          "
+
+  merge-ghcr:
+    needs:
+      - define
+      - build-ghcr
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
+    steps:
+      - name: Download digests (GHCR)
+        uses: actions/download-artifact@v4
+        with:
+          pattern: digests-ghcr-${{ matrix.version }}-*
+          path: /tmp/digests-ghcr
+          merge-multiple: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create manifest list and push (GHCR)
+        run: |
+          # First verify the directory and files exist
+          ls -la /tmp/digests-ghcr
+
+          # Create the manifest list
+          cd /tmp/digests-ghcr
+          docker buildx imagetools create -t ${{ env.GHCR_IMAGE }}:${{ matrix.version }} \
+            $(for digest in *; do echo -n "${{ env.GHCR_IMAGE }}@sha256:$digest "; done)
+
+      - name: Inspect image (GHCR)
+        run: |
+          docker buildx imagetools inspect ${{ env.GHCR_IMAGE }}:${{ matrix.version }}
+
+      - name: Test final image (GHCR)
+        run: |
+          echo "Testing final image functionality..."
+          docker run --rm ${{ env.GHCR_IMAGE }}:${{ matrix.version }} /bin/bash -c "
+            echo 'Testing tool versions:' &&
+            kubectl version --client &&
+            helm version &&
+            aws --version &&
+            sops --version &&
+            helmfile --version &&
+            echo 'All tools working correctly!'
+          "
