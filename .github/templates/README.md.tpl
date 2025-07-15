@@ -30,7 +30,7 @@ All current images include the following tools:
 
 Pull the specific kubectl version you need:
 ```bash
-docker pull perunengineering/aws-helm-kubectl:1.33.2
+docker pull sirantd/aws-helm-kubectl:1.33.2
 ```
 
 Or from GitHub Container Registry:
@@ -47,7 +47,7 @@ docker run --rm -it \
   -e AWS_ACCESS_KEY_ID \
   -e AWS_SECRET_ACCESS_KEY \
   -e AWS_DEFAULT_REGION \
-  perunengineering/aws-helm-kubectl:1.33.2 \
+  sirantd/aws-helm-kubectl:1.33.2 \
   kubectl get nodes
 ```
 
@@ -56,7 +56,7 @@ docker run --rm -it \
 # Mount your kubeconfig file
 docker run --rm -it \
   -v ~/.kube:/home/appuser/.kube:ro \
-  perunengineering/aws-helm-kubectl:1.33.2 \
+  sirantd/aws-helm-kubectl:1.33.2 \
   kubectl get pods
 ```
 
@@ -65,7 +65,7 @@ docker run --rm -it \
 # Start an interactive shell
 docker run --rm -it \
   -v $(pwd):/workspace \
-  perunengineering/aws-helm-kubectl:1.33.2 \
+  sirantd/aws-helm-kubectl:1.33.2 \
   /bin/bash
 ```
 

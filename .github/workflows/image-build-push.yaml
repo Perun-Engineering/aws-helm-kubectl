@@ -9,7 +9,7 @@ on:
     types: [published, edited]
 
 env:
-  DOCKERHUB_IMAGE: perunengineering/aws-helm-kubectl
+  DOCKERHUB_IMAGE: sirantd/aws-helm-kubectl
   GHCR_IMAGE: ghcr.io/perun-engineering/aws-helm-kubectl
 
 jobs:

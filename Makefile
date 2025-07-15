@@ -12,7 +12,7 @@ include .env
 # Latest version of helm-s3 may be found at: https://github.com/hypnoglow/helm-s3/releases
 # Latest version of helm-diff may be found at: https://github.com/databus23/helm-diff/releases
 
-DOCKER_IMAGE ?= perunengineering/aws-helm-kubectl
+DOCKER_IMAGE ?= sirantd/aws-helm-kubectl
 GHCR_IMAGE ?= ghcr.io/perun-engineering/aws-helm-kubectl
 DOCKER_TAG ?= `git rev-parse --abbrev-ref HEAD`
 KUBE_VERSION ?= 1.32.1
