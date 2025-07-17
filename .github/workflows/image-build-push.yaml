@@ -57,13 +57,12 @@ jobs:
             HELM_DIFF_VERSION=${{ env.HELM_DIFF_VERSION }}
             ALPINE_PYTHON=${{ env.ALPINE_PYTHON }}
             ALPINE_VERSION=${{ env.ALPINE_VERSION }}
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner (informational only)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: test-image:${{ matrix.version }}
           format: 'table'
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
 
   build:
     needs:

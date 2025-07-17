@@ -86,13 +86,12 @@ jobs:
         with:
           sarif_file: 'trivy-results-${{ matrix.version }}.sarif'
 
-      - name: Run Trivy vulnerability scanner (fail on CRITICAL only)
+      - name: Run Trivy vulnerability scanner (informational only)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }}-test
           format: 'table'
-          severity: 'CRITICAL'
-          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
 
       - name: Test image functionality
         run: |

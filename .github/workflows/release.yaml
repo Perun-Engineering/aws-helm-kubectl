@@ -23,7 +23,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     # Skip running release workflow on forks
-    if: github.repository_owner == 'opsworks-co'
+    if: github.repository_owner == 'perun-engineering'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,5 +56,5 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          repository: opsworksco/aws-helm-kubectl
+          repository: sirantd/aws-helm-kubectl
           short-description: ${{ github.event.repository.description }}
