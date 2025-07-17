@@ -51,6 +51,7 @@ jobs:
         with:
           context: .
           push: false
+          load: true
           tags: test-image:${{ matrix.version }}
           build-args: |
             KUBE_VERSION=${{ matrix.version }}
