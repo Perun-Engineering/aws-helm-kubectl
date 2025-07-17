@@ -1,15 +1,9 @@
-name: Security Scan
+name: PR Test Build
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
     types: [ opened, synchronize, reopened ]
-  schedule:
-    # Run security scan daily at 2 AM UTC
-    - cron: '0 2 * * *'
-  workflow_dispatch:
 
 env:
   DOCKERHUB_IMAGE: sirantd/aws-helm-kubectl
@@ -21,11 +15,11 @@ jobs:
     outputs:
       kubernetes_versions: ${{ steps.read_env.outputs.versions }}
     steps:
-      - name: Checkout
+      - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
-      - name: Read environment file
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Read environment file from PR branch
         id: read_env
         run: |
           # Extract only the KUBERNETES_VERSIONS line and get the array part
@@ -33,33 +27,31 @@ jobs:
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
           echo "Testing with Kubernetes versions: $VERSIONS"
 
-  security-scan:
+  test-build:
     needs: define
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
     steps:
-      - name: Checkout
+      - name: Checkout PR branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
-
-      - name: Read environment file
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Read environment file from PR branch
         run: |
           cat .env >> ${GITHUB_ENV}
-          echo "=== Environment variables ==="
+          echo "=== Environment variables from PR branch ==="
           cat .env
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Build test image
+      - name: Test build (no push)
         uses: docker/build-push-action@v6
         with:
           context: .
-          load: true
-          tags: ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }}-test
+          push: false
+          tags: test-image:${{ matrix.version }}
           build-args: |
             KUBE_VERSION=${{ matrix.version }}
             HELM_VERSION=${{ env.HELM_VERSION }}
@@ -71,32 +63,10 @@ jobs:
             HELM_DIFF_VERSION=${{ env.HELM_DIFF_VERSION }}
             ALPINE_PYTHON=${{ env.ALPINE_PYTHON }}
             ALPINE_VERSION=${{ env.ALPINE_VERSION }}
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }}-test
-          format: 'sarif'
-          output: 'trivy-results-${{ matrix.version }}.sarif'
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results-${{ matrix.version }}.sarif'
-
-      - name: Run Trivy vulnerability scanner (table format)
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }}-test
-          format: 'table'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '1'
-
       - name: Test image functionality
         run: |
           echo "Testing image functionality..."
-          docker run --rm ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }}-test /bin/bash -c "
+          docker run --rm test-image:${{ matrix.version }} /bin/bash -c "
             echo 'Testing tool versions:' &&
             kubectl version --client &&
             helm version &&

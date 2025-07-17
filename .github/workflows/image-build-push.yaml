@@ -3,7 +3,7 @@ name: Docker Build
 on:
   push:
     branches:
-      - main
+      - main  # Only build and push after PR is merged to main
   workflow_dispatch:
   release:
     types: [published, edited]
