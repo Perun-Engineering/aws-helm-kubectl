@@ -23,7 +23,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     # Skip running release workflow on forks
-    if: github.repository_owner == 'perun-engineering'
+    if: github.repository_owner == 'Perun-Engineering'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -54,7 +54,7 @@ jobs:
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
+          username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: sirantd/aws-helm-kubectl
           short-description: ${{ github.event.repository.description }}
