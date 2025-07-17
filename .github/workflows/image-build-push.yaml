@@ -104,15 +104,13 @@ jobs:
           format: 'table'
           severity: 'CRITICAL,HIGH'
 
-      - name: Build and push to both registries
+      - name: Build and push to Docker Hub
         id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           platforms: ${{ matrix.platform }}
-          outputs: |
-            type=image,name=${{ env.DOCKERHUB_IMAGE }},push-by-digest=true,name-canonical=true,push=true
-            type=image,name=${{ env.GHCR_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=${{ env.DOCKERHUB_IMAGE }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
             KUBE_VERSION=${{ matrix.version }}
             HELM_VERSION=${{ env.HELM_VERSION }}
@@ -127,17 +125,53 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Export digest
+
+      - name: Re-tag and push to GHCR
+        id: build-ghcr
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          outputs: type=image,name=${{ env.GHCR_IMAGE }},push-by-digest=true,name-canonical=true,push=true
+          build-args: |
+            KUBE_VERSION=${{ matrix.version }}
+            HELM_VERSION=${{ env.HELM_VERSION }}
+            SOPS_VERSION=${{ env.SOPS_VERSION }}
+            HELM_SECRETS_VERSION=${{ env.HELM_SECRETS_VERSION }}
+            HELM_S3_VERSION=${{ env.HELM_S3_VERSION }}
+            HELMFILE_VERSION=${{ env.HELMFILE_VERSION }}
+            AWS_CLI_VERSION=${{ env.AWS_CLI_VERSION }}
+            HELM_DIFF_VERSION=${{ env.HELM_DIFF_VERSION }}
+            ALPINE_PYTHON=${{ env.ALPINE_PYTHON }}
+            ALPINE_VERSION=${{ env.ALPINE_VERSION }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+
+      - name: Export digest (Docker Hub)
         run: |
           mkdir -p /tmp/digests
           digest="${{ steps.build.outputs.digest }}"
           echo "$digest" | sed 's/^sha256://' > "/tmp/digests/${digest#sha256:}"
 
-      - name: Upload digest
+      - name: Export digest (GHCR)
+        run: |
+          mkdir -p /tmp/digests-ghcr
+          digest="${{ steps.build-ghcr.outputs.digest }}"
+          echo "$digest" | sed 's/^sha256://' > "/tmp/digests-ghcr/${digest#sha256:}"
+
+      - name: Upload digest (Docker Hub)
         uses: actions/upload-artifact@v4
         with:
           name: digests-${{ matrix.version }}-${{ strategy.job-index }}
           path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload digest (GHCR)
+        uses: actions/upload-artifact@v4
+        with:
+          name: digests-ghcr-${{ matrix.version }}-${{ strategy.job-index }}
+          path: /tmp/digests-ghcr/*
           if-no-files-found: error
           retention-days: 1
 
@@ -206,7 +240,7 @@ jobs:
       - name: Download digests (GHCR)
         uses: actions/download-artifact@v4
         with:
-          pattern: digests-${{ matrix.version }}-*
+          pattern: digests-ghcr-${{ matrix.version }}-*
           path: /tmp/digests-ghcr
           merge-multiple: true
 
