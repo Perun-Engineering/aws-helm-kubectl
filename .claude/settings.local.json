@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "mcp__package-version__check_docker_tags",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

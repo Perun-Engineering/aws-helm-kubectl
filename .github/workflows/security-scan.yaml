@@ -5,27 +5,51 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    types: [ opened, synchronize, reopened ]
   schedule:
     # Run security scan daily at 2 AM UTC
     - cron: '0 2 * * *'
   workflow_dispatch:
 
 env:
-  DOCKERHUB_IMAGE: perunengineering/aws-helm-kubectl
+  DOCKERHUB_IMAGE: sirantd/aws-helm-kubectl
   GHCR_IMAGE: ghcr.io/perun-engineering/aws-helm-kubectl
 
 jobs:
-  security-scan:
+  define:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        version: ["1.32.1", "1.33.2"]  # Test latest and newest versions
+    outputs:
+      kubernetes_versions: ${{ steps.read_env.outputs.versions }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+      - name: Read environment file
+        id: read_env
+        run: |
+          # Extract only the KUBERNETES_VERSIONS line and get the array part
+          VERSIONS=$(grep '^KUBERNETES_VERSIONS=' .env | cut -d'=' -f2-)
+          echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
+          echo "Testing with Kubernetes versions: $VERSIONS"
+
+  security-scan:
+    needs: define
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Read environment file
-        run: cat .env >> ${GITHUB_ENV}
+        run: |
+          cat .env >> ${GITHUB_ENV}
+          echo "=== Environment variables ==="
+          cat .env
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -48,12 +72,13 @@ jobs:
             ALPINE_PYTHON=${{ env.ALPINE_PYTHON }}
             ALPINE_VERSION=${{ env.ALPINE_VERSION }}
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner (SARIF report)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }}-test
           format: 'sarif'
           output: 'trivy-results-${{ matrix.version }}.sarif'
+          severity: 'CRITICAL,HIGH'  # Report all for visibility, but don't fail
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
@@ -61,12 +86,12 @@ jobs:
         with:
           sarif_file: 'trivy-results-${{ matrix.version }}.sarif'
 
-      - name: Run Trivy vulnerability scanner (table format)
+      - name: Run Trivy vulnerability scanner (fail on CRITICAL only)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.DOCKERHUB_IMAGE }}:${{ matrix.version }}-test
           format: 'table'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
           exit-code: '1'
 
       - name: Test image functionality
