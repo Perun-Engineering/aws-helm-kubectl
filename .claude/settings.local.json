@@ -5,7 +5,9 @@
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
       "mcp__package-version__check_docker_tags",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(gh pr:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": []
   }
