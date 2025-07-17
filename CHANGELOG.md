@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.4.0...v1.5.0) (2025-07-17)
+
+### Features
+
+* Update AWS CLI to latest version 2.27.53 ([9a886bd](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/9a886bd4a732140a61f8b4105f2f72bc0fc78641))
+
+### Bug Fixes
+
+* Add default values to Dockerfile ARG declarations ([053c1c1](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/053c1c1df6b0d1af6419ffa9e033577469e27a8c))
+
 ## [1.4.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.3.0...v1.4.0) (2025-07-17)
 
 ### Features
