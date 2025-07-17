@@ -5,7 +5,7 @@ ARG ALPINE_VERSION=3.22.0
 ### --------- STEP 1: Build AWS CLI
 FROM public.ecr.aws/docker/library/python:${ALPINE_PYTHON} AS builder
 
-ARG AWS_CLI_VERSION=2.27.50
+ARG AWS_CLI_VERSION=2.27.53
 
 # Install build dependencies
 RUN apk add --no-cache git unzip groff build-base libffi-dev cmake
@@ -32,7 +32,7 @@ RUN /aws-cli-bin/aws --version && \
 FROM public.ecr.aws/docker/library/alpine:${ALPINE_VERSION}
 
 ARG ALPINE_VERSION=3.22.0
-ARG AWS_CLI_VERSION=2.27.50
+ARG AWS_CLI_VERSION=2.27.53
 ARG KUBE_VERSION=1.32.7
 ARG HELM_VERSION=3.18.4
 ARG SOPS_VERSION=3.10.2
