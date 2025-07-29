@@ -6,6 +6,10 @@ on:
     - cron: '0 9 * * 1'
   workflow_dispatch:
 
+permissions:
+  issues: write
+  contents: read
+
 jobs:
   check-versions:
     runs-on: ubuntu-latest
