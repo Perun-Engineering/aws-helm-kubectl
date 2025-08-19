@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.6.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.5.0...v1.6.0) (2025-08-19)
+
+### Features
+
+* update dockerfile configuration ([a8a50fc](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/a8a50fcf26b2c35d7f7bffc1e9818525fb60a10c))
+
 ## [1.5.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.4.0...v1.5.0) (2025-07-17)
 
 ### Features
