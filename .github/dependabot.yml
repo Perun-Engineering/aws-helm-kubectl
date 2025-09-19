@@ -9,9 +9,6 @@ updates:
     labels:
       - "docker"
       - "dependencies"
-    ignore:
-      - dependency-name: "alpine"
-        versions: ["edge"]
 
   # GitHub Actions dependencies
   - package-ecosystem: "github-actions"
