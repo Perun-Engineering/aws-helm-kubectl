@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check for new versions
         id: version-check
@@ -114,7 +114,7 @@ jobs:
 
       - name: Create Issue for Version Updates
         if: steps.version-check.outputs.updates_needed == 'true'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const title = `🔄 Version Updates Available - ${new Date().toISOString().split('T')[0]}`;

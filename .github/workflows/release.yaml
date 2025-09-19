@@ -26,13 +26,13 @@ jobs:
     if: github.repository_owner == 'Perun-Engineering'
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Release
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v5
         with:
           semantic_version: 24.2.0
           extra_plugins: |
@@ -49,7 +49,7 @@ jobs:
   dockerHubDescription:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Docker Hub Description
         uses: peter-evans/dockerhub-description@v4
