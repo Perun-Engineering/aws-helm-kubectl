@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.8.1...v1.9.0) (2025-10-03)
+
+### Features
+
+* arm runners for faster builds ([#16](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/16)) ([5ba38a1](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/5ba38a1742e3b8c9b4aa1f0085b5cc48f63a7904))
+
+### Bug Fixes
+
+* dockerfile targetarch ([#18](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/18)) ([2f9fe78](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/2f9fe78971aa0541b3a1e17c83ed35615eff5980))
+* Matrix build ([#17](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/17)) ([3931959](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/393195993a11e96120480a61bb0a077cd753f8be))
+
 ## [1.8.1](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.8.0...v1.8.1) (2025-10-03)
 
 ### Bug Fixes
