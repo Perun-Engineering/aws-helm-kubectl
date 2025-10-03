@@ -6,6 +6,18 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
+* bump versions for SOPS and aws-cli ([9155f95](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/9155f958566b1edabbdb6ebe41834e14f6d166f7))
+* Bump versions, improve documentation, fix helm plugins ([#13](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/13)) ([ab20fee](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/ab20fee89500e515ecb95eff97227dc5b57c7c5f))
+
+### Bug Fixes
+
+* docker build error ([#14](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/14)) ([5997ea3](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/5997ea330ffe6a8cb901952834845234e03daced))
+* install helm plugins for the user we are using ([6c009ae](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/6c009aeb550992d8a83ec90fd9b502504cda015b))
+
+## [1.8.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.7.0...v1.8.0) (2025-10-03)
+
+### Features
+
 * Bump versions, improve documentation, fix helm plugins ([#13](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/13)) ([ab20fee](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/ab20fee89500e515ecb95eff97227dc5b57c7c5f))
 
 ## [1.7.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.6.0...v1.7.0) (2025-09-19)
