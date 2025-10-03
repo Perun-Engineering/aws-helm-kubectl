@@ -98,10 +98,10 @@ RUN addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser && \
     chown -R appuser:appuser /config
 
+USER appuser
+WORKDIR /config
+
 # Install helm plugins
 RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v${HELM_SECRETS_VERSION} && \
     helm plugin install https://github.com/hypnoglow/helm-s3.git --version ${HELM_S3_VERSION} && \
     helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
-
-USER appuser
-WORKDIR /config
