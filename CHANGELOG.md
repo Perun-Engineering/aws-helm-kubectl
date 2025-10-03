@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.1](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.8.0...v1.8.1) (2025-10-03)
+
+### Bug Fixes
+
+* remove typo in Dockerfile ([#15](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/15)) ([fd470a6](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/fd470a6fb3323d69f51e6423f2dae5663be6a482))
+
 ## [1.8.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.7.0...v1.8.0) (2025-10-03)
 
 ### Features
