@@ -41,7 +41,7 @@ jobs:
           - platform: linux/amd64
             runner: ubuntu-latest
           - platform: linux/arm64
-            runner: ubuntu-24.04-arm64
+            runner: ubuntu-24.04-arm
         version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
     runs-on: ${{ matrix.runner }}
     steps:
@@ -164,7 +164,7 @@ jobs:
       - name: Upload digest (Docker Hub)
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.version }}-${{ strategy.job-index }}
+          name: digests-${{ matrix.version }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -172,7 +172,7 @@ jobs:
       - name: Upload digest (GHCR)
         uses: actions/upload-artifact@v4
         with:
-          name: digests-ghcr-${{ matrix.version }}-${{ strategy.job-index }}
+          name: digests-ghcr-${{ matrix.version }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           path: /tmp/digests-ghcr/*
           if-no-files-found: error
           retention-days: 1
