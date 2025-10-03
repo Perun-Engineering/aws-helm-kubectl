@@ -37,11 +37,16 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
+        version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
         platform:
           - linux/amd64
           - linux/arm64
-        version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
-    runs-on: ubuntu-latest
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -162,7 +167,7 @@ jobs:
       - name: Upload digest (Docker Hub)
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ matrix.version }}-${{ strategy.job-index }}
+          name: digests-${{ matrix.version }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           path: /tmp/digests/*
           if-no-files-found: error
           retention-days: 1
@@ -170,7 +175,7 @@ jobs:
       - name: Upload digest (GHCR)
         uses: actions/upload-artifact@v4
         with:
-          name: digests-ghcr-${{ matrix.version }}-${{ strategy.job-index }}
+          name: digests-ghcr-${{ matrix.version }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           path: /tmp/digests-ghcr/*
           if-no-files-found: error
           retention-days: 1
@@ -185,7 +190,7 @@ jobs:
         version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
     steps:
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: digests-${{ matrix.version }}-*
           path: /tmp/digests
@@ -237,7 +242,7 @@ jobs:
         version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
     steps:
       - name: Download digests (GHCR)
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: digests-ghcr-${{ matrix.version }}-*
           path: /tmp/digests-ghcr
