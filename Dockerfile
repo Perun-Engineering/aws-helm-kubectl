@@ -103,5 +103,5 @@ WORKDIR /config
 
 # Install helm plugins
 RUN helm plugin install https://github.com/jkroepke/helm-secrets --version v${HELM_SECRETS_VERSION} --verify=false && \
-    helm plugin install https://github.com/hypnoglow/helm-s3.git --version ${HELM_S3_VERSION} && \
-    helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION}
+    helm plugin install https://github.com/hypnoglow/helm-s3.git --version ${HELM_S3_VERSION} --verify=false && \
+    helm plugin install https://github.com/databus23/helm-diff --version ${HELM_DIFF_VERSION} --verify=false
