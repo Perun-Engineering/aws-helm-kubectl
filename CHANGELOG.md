@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.8.2](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.8.1...v1.8.2) (2025-11-18)
+
+### Bug Fixes
+
+* do not verify helm-s3, helm-diff, they doesn't support it ([21610b3](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/21610b3f0bb5335303a8520c4f25701ce38a03e1))
+* do not verify helm-secrets, it doesn't support it ([79bdc94](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/79bdc946b0031a18f3caaaedf912ab7644483d70))
+
 ## [1.8.1](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.8.0...v1.8.1) (2025-10-03)
 
 ### Bug Fixes
