@@ -190,7 +190,7 @@ jobs:
         version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
     steps:
       - name: Download digests
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: digests-${{ matrix.version }}-*
           path: /tmp/digests
@@ -242,7 +242,7 @@ jobs:
         version: ${{fromJson(needs.define.outputs.kubernetes_versions)}}
     steps:
       - name: Download digests (GHCR)
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: digests-ghcr-${{ matrix.version }}-*
           path: /tmp/digests-ghcr
