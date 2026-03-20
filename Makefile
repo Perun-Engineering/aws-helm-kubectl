@@ -17,7 +17,7 @@ GHCR_IMAGE ?= ghcr.io/perun-engineering/aws-helm-kubectl
 DOCKER_TAG ?= `git rev-parse --abbrev-ref HEAD`
 KUBE_VERSION ?= 1.32.1
 
-.PHONY: help docker_build docker_push docker_test security_scan clean validate_versions generate_readme
+.PHONY: help docker_build docker_push docker_test clean validate_versions generate_readme
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -69,13 +69,6 @@ docker_test: ## Test Docker image functionality
 		helmfile --version && \
 		echo 'All tools working correctly!'"
 
-security_scan: ## Run security scan on Docker image
-	@echo "Running security scan on: ${DOCKER_IMAGE}:${KUBE_VERSION}"
-	@if command -v trivy >/dev/null 2>&1; then \
-		trivy image --severity HIGH,CRITICAL ${DOCKER_IMAGE}:${KUBE_VERSION}; \
-	else \
-		echo "Trivy not installed. Install with: brew install trivy (macOS) or apt-get install trivy (Ubuntu)"; \
-	fi
 
 validate_versions: ## Validate that all version variables are set
 	@echo "Validating version variables..."

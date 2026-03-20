@@ -92,6 +92,4 @@ make docker_build_all
 # Test the built image
 make docker_test KUBE_VERSION=1.33.2
 
-# Run security scan
-make security_scan KUBE_VERSION=1.33.2
 ```
