@@ -9,6 +9,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
@@ -20,8 +24,9 @@ jobs:
       pull-requests: write
     name: Release
     runs-on: ubuntu-latest
-    # Skip running release workflow on forks and only run if Docker Build succeeded
-    if: github.repository_owner == 'Perun-Engineering' && github.event.workflow_run.conclusion == 'success'
+    if: >-
+      github.repository_owner == 'Perun-Engineering' &&
+      (github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success')
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -46,6 +51,7 @@ jobs:
 
   dockerHubDescription:
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'Perun-Engineering'
     steps:
       - uses: actions/checkout@v6
 
