@@ -135,7 +135,7 @@ jobs:
           echo "$digest" | sed 's/^sha256://' > "/tmp/digests-ghcr/${digest#sha256:}"
 
       - name: Upload digest (Docker Hub)
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: digests-${{ matrix.version }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           path: /tmp/digests/*
@@ -143,7 +143,7 @@ jobs:
           retention-days: 1
 
       - name: Upload digest (GHCR)
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: digests-ghcr-${{ matrix.version }}-${{ matrix.platform == 'linux/amd64' && 'amd64' || 'arm64' }}
           path: /tmp/digests-ghcr/*
