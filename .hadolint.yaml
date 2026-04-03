@@ -1,0 +1,7 @@
+ignored:
+  - DL3018 # Pin versions in apk add - impractical for Alpine, versions change with each release
+  - DL3013 # Pin versions in pip - builder stage only, pip upgrade is intentional
+  - DL3042 # Avoid pip cache dir - builder stage only, discarded after build
+  - DL3059 # Multiple consecutive RUN - intentional separation in builder stage
+  - SC1091 # Not following sourced file - false positive for venv activate
+  - DL4006 # Set SHELL -o pipefail - busybox ash doesn't support pipefail

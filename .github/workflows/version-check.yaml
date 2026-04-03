@@ -19,12 +19,15 @@ jobs:
 
       - name: Check for new versions
         id: version-check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Checking for new versions..."
 
           # Function to get latest GitHub release
           get_latest_release() {
-            curl -s "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed 's/^v//'
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed 's/^v//'
           }
 
           # Function to get latest Alpine version
@@ -35,7 +38,8 @@ jobs:
 
           # Function to get latest Kubernetes version
           get_latest_kubernetes() {
-            curl -s "https://api.github.com/repos/kubernetes/kubernetes/releases/latest" | jq -r '.tag_name' | sed 's/^v//'
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/kubernetes/kubernetes/releases/latest" | jq -r '.tag_name' | sed 's/^v//'
           }
 
           # Read current versions
@@ -49,6 +53,8 @@ jobs:
           LATEST_HELM_SECRETS=$(get_latest_release "jkroepke/helm-secrets")
           LATEST_HELMFILE=$(get_latest_release "helmfile/helmfile")
           LATEST_HELM_DIFF=$(get_latest_release "databus23/helm-diff")
+          LATEST_AWS_CLI=$(get_latest_release "aws/aws-cli")
+          LATEST_HELM_S3=$(get_latest_release "hypnoglow/helm-s3")
 
           echo "Current versions:"
           echo "Alpine: $ALPINE_VERSION"
@@ -57,6 +63,8 @@ jobs:
           echo "Helm Secrets: $HELM_SECRETS_VERSION"
           echo "Helmfile: $HELMFILE_VERSION"
           echo "Helm Diff: $HELM_DIFF_VERSION"
+          echo "AWS CLI: $AWS_CLI_VERSION"
+          echo "Helm S3: $HELM_S3_VERSION"
 
           echo "Latest versions:"
           echo "Alpine: $LATEST_ALPINE"
@@ -66,6 +74,8 @@ jobs:
           echo "Helm Secrets: $LATEST_HELM_SECRETS"
           echo "Helmfile: $LATEST_HELMFILE"
           echo "Helm Diff: $LATEST_HELM_DIFF"
+          echo "AWS CLI: $LATEST_AWS_CLI"
+          echo "Helm S3: $LATEST_HELM_S3"
 
           # Check if updates are needed
           UPDATES_NEEDED=""
@@ -92,6 +102,14 @@ jobs:
 
           if [ "$HELM_DIFF_VERSION" != "$LATEST_HELM_DIFF" ]; then
             UPDATES_NEEDED="$UPDATES_NEEDED\n- Helm Diff: $HELM_DIFF_VERSION → $LATEST_HELM_DIFF"
+          fi
+
+          if [ "$AWS_CLI_VERSION" != "$LATEST_AWS_CLI" ]; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- AWS CLI: $AWS_CLI_VERSION → $LATEST_AWS_CLI"
+          fi
+
+          if [ "$HELM_S3_VERSION" != "$LATEST_HELM_S3" ]; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- Helm S3: $HELM_S3_VERSION → $LATEST_HELM_S3"
           fi
 
           # Check if new Kubernetes version should be added
