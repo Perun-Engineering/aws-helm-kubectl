@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.9.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.8.3...v1.9.0) (2026-04-13)
+
+### Features
+
+* **deps:** update tool versions ([3edcc07](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/3edcc075afc25b36a228a2f335ad5d5f0c6ba102)), closes [#41](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/41)
+
 ## [1.8.3](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.8.2...v1.8.3) (2026-02-10)
 
 ### Bug Fixes
