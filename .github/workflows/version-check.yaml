@@ -132,7 +132,7 @@ jobs:
 
       - name: Create Issue for Version Updates
         if: steps.version-check.outputs.updates_needed == 'true'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const title = `🔄 Version Updates Available - ${new Date().toISOString().split('T')[0]}`;
