@@ -30,6 +30,14 @@ jobs:
               "https://api.github.com/repos/$1/releases/latest" | jq -r '.tag_name' | sed 's/^v//'
           }
 
+          # Function to get latest tag (for repos without GitHub Releases, e.g. aws-cli)
+          get_latest_tag() {
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/$1/tags?per_page=100" | \
+            jq -r '.[].name' | sed 's/^v//' | \
+            grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1
+          }
+
           # Function to get latest Alpine version
           get_latest_alpine() {
             curl -s "https://registry.hub.docker.com/v2/repositories/library/alpine/tags/?page_size=100" | \
@@ -53,7 +61,7 @@ jobs:
           LATEST_HELM_SECRETS=$(get_latest_release "jkroepke/helm-secrets")
           LATEST_HELMFILE=$(get_latest_release "helmfile/helmfile")
           LATEST_HELM_DIFF=$(get_latest_release "databus23/helm-diff")
-          LATEST_AWS_CLI=$(get_latest_release "aws/aws-cli")
+          LATEST_AWS_CLI=$(get_latest_tag "aws/aws-cli")
           LATEST_HELM_S3=$(get_latest_release "hypnoglow/helm-s3")
 
           echo "Current versions:"
