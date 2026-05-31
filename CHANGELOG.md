@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.10.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.9.0...v1.10.0) (2026-05-31)
+
+### Features
+
+* **deps:** bump tool versions (aws-cli 2.34.57, helm 4.2.0, k8s 1.36.1, python 3.13) ([6e0eea0](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/6e0eea0c92111253ea8871188247d58a27df78ef))
+
 ## [1.9.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.8.3...v1.9.0) (2026-04-13)
 
 ### Features
