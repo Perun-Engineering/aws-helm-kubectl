@@ -16,7 +16,7 @@ RUN git clone --single-branch --depth 1 -b ${AWS_CLI_VERSION} https://github.com
 WORKDIR /aws-cli
 RUN python -m venv venv && \
     . venv/bin/activate && \
-    pip install --upgrade pip && \
+    pip install --upgrade pip 'setuptools<81' && \
     scripts/installers/make-exe && \
     unzip -q dist/awscli-exe.zip && \
     aws/install --bin-dir /aws-cli-bin
