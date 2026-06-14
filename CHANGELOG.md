@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.10.0...v1.11.0) (2026-06-14)
+
+### Features
+
+* **deps:** bump tool versions and Alpine to 3.24 ([f321bbf](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/f321bbf59bd76399f10101bea99dd051351d112a))
+* **deps:** bump tool versions and Alpine to 3.24 ([#46](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/46)) ([029517c](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/029517cd6f23022b38a42e77e3fd7e724b7cf1d5))
+
 ## [1.10.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.9.0...v1.10.0) (2026-05-31)
 
 ### Features
