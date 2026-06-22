@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Lint Dockerfile
         uses: hadolint/hadolint-action@v3.3.0
         with:
@@ -40,7 +40,7 @@ jobs:
       kubernetes_versions: ${{ steps.read_env.outputs.versions }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Read environment file
         id: read_env
         run: |
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Read environment file
         run: cat .env >> ${GITHUB_ENV}
       - name: Set up Docker Buildx
@@ -94,7 +94,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Read environment file
         run: cat .env >> ${GITHUB_ENV}
       - name: Set up Docker Buildx
