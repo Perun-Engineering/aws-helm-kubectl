@@ -98,7 +98,7 @@ RUN addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser && \
     chown -R appuser:appuser /config
 
-USER appuser
+USER 1000:1000
 WORKDIR /config
 
 # Install helm plugins

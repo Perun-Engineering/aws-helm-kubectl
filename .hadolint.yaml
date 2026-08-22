@@ -5,3 +5,4 @@ ignored:
   - DL3059 # Multiple consecutive RUN - intentional separation in builder stage
   - SC1091 # Not following sourced file - false positive for venv activate
   - DL4006 # Set SHELL -o pipefail - busybox ash doesn't support pipefail
+  - DL3064 # Sensitive data in ARG/ENV - false positive on *_SECRETS_VERSION, which are version strings
