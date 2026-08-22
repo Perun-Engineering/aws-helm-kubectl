@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.11.1](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.11.0...v1.11.1) (2026-08-22)
+
+### Bug Fixes
+
+* **docker:** use numeric UID:GID for USER and silence DL3064 ([780f311](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/780f311e8f4b95aaca04159506b29ca1fe6ddc8f)), closes [#49](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/49)
+* **docker:** use numeric UID:GID for USER and silence DL3064 ([#50](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/50)) ([d932612](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/d932612a6d9e3af0cdc0f3a385a135bc1f9afaa7))
+
 ## [1.11.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.10.0...v1.11.0) (2026-06-14)
 
 ### Features
