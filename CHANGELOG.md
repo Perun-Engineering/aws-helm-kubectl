@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.12.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.11.1...v1.12.0) (2026-08-23)
+
+### Features
+
+* **deps:** bump alpine, python, aws-cli, helm, kubectl, sops, helmfile and helm-diff ([d58354e](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/d58354eb79895f4c11fc6501bbdc53efe754d553)), closes [#47](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/47)
+* **deps:** bump alpine, python, aws-cli, helm, kubectl, sops, helmfile and helm-diff ([#51](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/51)) ([4b01678](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/4b01678efc463e7ec4f5c93295ac9dcad11690b6))
+
 ## [1.11.1](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.11.0...v1.11.1) (2026-08-22)
 
 ### Bug Fixes
