@@ -10,9 +10,9 @@ Multi-architecture Docker image containing AWS CLI, Helm, Kubectl, and other com
 ## Available Tags (Kubectl Versions)
 
 - `1.33.13`
-- `1.34.9`
-- `1.35.6`
-- `1.36.2`
+- `1.34.11`
+- `1.35.8`
+- `1.36.4`
 
 ## Components Versions
 
@@ -20,25 +20,25 @@ All current images include the following tools:
 
 | Component | Version |
 |-----------|---------|
-| Alpine | 3.24.0 |
-| Helm | 4.2.1 |
-| AWS CLI | 2.35.4 |
-| SOPS | 3.13.1 |
+| Alpine | 3.24.1 |
+| Helm | 4.2.4 |
+| AWS CLI | 2.36.29 |
+| SOPS | 3.13.3 |
 | Helm Secrets Plugin | 4.7.7 |
 | Helm S3 Plugin | 0.17.2 |
-| Helm Diff Plugin | 3.15.8 |
-| Helmfile | 1.5.3 |
+| Helm Diff Plugin | 3.15.11 |
+| Helmfile | 1.7.4 |
 
 ## Usage
 
 Pull the specific kubectl version you need:
 ```bash
-docker pull sirantd/aws-helm-kubectl:1.36.2
+docker pull sirantd/aws-helm-kubectl:1.36.4
 ```
 
 Or from GitHub Container Registry:
 ```bash
-docker pull ghcr.io/perun-engineering/aws-helm-kubectl:1.36.2
+docker pull ghcr.io/perun-engineering/aws-helm-kubectl:1.36.4
 ```
 
 ## Examples
@@ -50,7 +50,7 @@ docker run --rm -it \
   -e AWS_ACCESS_KEY_ID \
   -e AWS_SECRET_ACCESS_KEY \
   -e AWS_DEFAULT_REGION \
-  sirantd/aws-helm-kubectl:1.36.2 \
+  sirantd/aws-helm-kubectl:1.36.4 \
   kubectl get nodes
 ```
 
@@ -59,7 +59,7 @@ docker run --rm -it \
 # Mount your kubeconfig file
 docker run --rm -it \
   -v ~/.kube:/home/appuser/.kube:ro \
-  sirantd/aws-helm-kubectl:1.36.2 \
+  sirantd/aws-helm-kubectl:1.36.4 \
   kubectl get pods
 ```
 
@@ -68,7 +68,7 @@ docker run --rm -it \
 # Start an interactive shell
 docker run --rm -it \
   -v $(pwd):/workspace \
-  sirantd/aws-helm-kubectl:1.36.2 \
+  sirantd/aws-helm-kubectl:1.36.4 \
   /bin/bash
 ```
 
