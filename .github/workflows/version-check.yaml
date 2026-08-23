@@ -50,6 +50,26 @@ jobs:
               "https://api.github.com/repos/kubernetes/kubernetes/releases/latest" | jq -r '.tag_name' | sed 's/^v//'
           }
 
+          # Function to get the latest python builder image on the current tracks.
+          # Stays on the Python minor we already build against (a Python major/minor
+          # jump needs an aws-cli compatibility check, not an automated nudge) and
+          # follows whichever Alpine minor ALPINE_VERSION is on, so the two move together.
+          get_latest_python_alpine() {
+            local py_minor alpine_track
+            py_minor=$(echo "$ALPINE_PYTHON" | cut -d. -f1-2)
+            alpine_track=alpine$(echo "$ALPINE_VERSION" | cut -d. -f1-2)
+            curl -s "https://registry.hub.docker.com/v2/repositories/library/python/tags/?name=-${alpine_track}&page_size=100" | \
+            jq -r '.results[].name' | \
+            grep -E "^${py_minor}\.[0-9]+-${alpine_track}$" | sort -V | tail -1
+          }
+
+          # Function to get the latest patch release of a given Kubernetes minor (e.g. 1.36)
+          get_latest_kubernetes_patch() {
+            local stable
+            stable=$(curl -fsS "https://dl.k8s.io/release/stable-$1.txt" 2>/dev/null) || return 0
+            echo "$stable" | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/^v//'
+          }
+
           # Read current versions
           source .env
 
@@ -63,9 +83,11 @@ jobs:
           LATEST_HELM_DIFF=$(get_latest_release "databus23/helm-diff")
           LATEST_AWS_CLI=$(get_latest_tag "aws/aws-cli")
           LATEST_HELM_S3=$(get_latest_release "hypnoglow/helm-s3")
+          LATEST_ALPINE_PYTHON=$(get_latest_python_alpine)
 
           echo "Current versions:"
           echo "Alpine: $ALPINE_VERSION"
+          echo "Python builder: $ALPINE_PYTHON"
           echo "Helm: $HELM_VERSION"
           echo "SOPS: $SOPS_VERSION"
           echo "Helm Secrets: $HELM_SECRETS_VERSION"
@@ -76,6 +98,7 @@ jobs:
 
           echo "Latest versions:"
           echo "Alpine: $LATEST_ALPINE"
+          echo "Python builder: $LATEST_ALPINE_PYTHON"
           echo "Helm: $LATEST_HELM"
           echo "Kubernetes: $LATEST_KUBERNETES"
           echo "SOPS: $LATEST_SOPS"
@@ -90,6 +113,12 @@ jobs:
 
           if [ "$ALPINE_VERSION" != "$LATEST_ALPINE" ]; then
             UPDATES_NEEDED="$UPDATES_NEEDED\n- Alpine: $ALPINE_VERSION → $LATEST_ALPINE"
+          fi
+
+          # Empty means the lookup failed or no image exists on this track yet;
+          # stay quiet rather than emitting a half-written "x → " line.
+          if [ -n "$LATEST_ALPINE_PYTHON" ] && [ "$ALPINE_PYTHON" != "$LATEST_ALPINE_PYTHON" ]; then
+            UPDATES_NEEDED="$UPDATES_NEEDED\n- Python builder: $ALPINE_PYTHON → $LATEST_ALPINE_PYTHON"
           fi
 
           if [ "$HELM_VERSION" != "$LATEST_HELM" ]; then
@@ -120,12 +149,45 @@ jobs:
             UPDATES_NEEDED="$UPDATES_NEEDED\n- Helm S3: $HELM_S3_VERSION → $LATEST_HELM_S3"
           fi
 
-          # Check if new Kubernetes version should be added
-          CURRENT_KUBE_VERSIONS=$(echo $KUBERNETES_VERSIONS | jq -r '.[]' | sort -V)
+          # Read the raw line rather than the sourced value: `source .env` strips
+          # the JSON quotes, leaving [1.33.13,...] which jq rejects. The list was
+          # therefore always empty, so the "add a new minor" check below never
+          # matched and reported every latest release as missing.
+          KUBERNETES_VERSIONS_JSON=$(grep '^KUBERNETES_VERSIONS=' .env | cut -d'=' -f2-)
+          CURRENT_KUBE_VERSIONS=$(echo "$KUBERNETES_VERSIONS_JSON" | jq -r '.[]' | sort -V)
+
+          # Check each tracked minor for a newer patch. The "add a new minor" check
+          # below only fires when a whole new minor appears, so without this a patch
+          # bump inside a minor we already ship (1.36.2 → 1.36.4) goes unreported.
+          while read -r kube_version; do
+            [ -n "$kube_version" ] || continue
+            kube_minor=$(echo "$kube_version" | cut -d. -f1-2)
+            latest_patch=$(get_latest_kubernetes_patch "$kube_minor")
+            echo "Kubernetes $kube_minor: $kube_version (latest patch: ${latest_patch:-unknown})"
+            if [ -n "$latest_patch" ] && [ "$kube_version" != "$latest_patch" ]; then
+              UPDATES_NEEDED="$UPDATES_NEEDED\n- Kubernetes: $kube_version → $latest_patch"
+            fi
+          done <<< "$CURRENT_KUBE_VERSIONS"
+
+          # Check if a brand new Kubernetes minor should be added to the matrix
           LATEST_KUBE_MAJOR_MINOR=$(echo $LATEST_KUBERNETES | cut -d. -f1-2)
 
           if ! echo "$CURRENT_KUBE_VERSIONS" | grep -q "^$LATEST_KUBE_MAJOR_MINOR"; then
             UPDATES_NEEDED="$UPDATES_NEEDED\n- Kubernetes: Add version $LATEST_KUBERNETES"
+          fi
+
+          # Check pre-commit hook revisions. Running the tool's own updater beats
+          # parsing the config by hand: it skips `repo: local`, and it understands
+          # repos that tag without cutting GitHub releases.
+          if pip install --quiet pre-commit; then
+            pre-commit autoupdate >/dev/null 2>&1 || true
+            while read -r old_rev new_rev; do
+              UPDATES_NEEDED="$UPDATES_NEEDED\n- pre-commit hooks: $old_rev → $new_rev"
+            done < <(git diff -U0 -- .pre-commit-config.yaml | \
+                     awk '/^[-+][[:space:]]*rev:/ {print $NF}' | paste - -)
+            git checkout -- .pre-commit-config.yaml
+          else
+            echo "::warning::Could not install pre-commit; skipped the hook revision check."
           fi
 
           if [ -n "$UPDATES_NEEDED" ]; then
