@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.13.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.12.0...v1.13.0) (2026-09-30)
+
+### Features
+
+* **deps:** add kubectl 1.37, move builder to Python 3.14, bump tools ([bf8da3b](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/bf8da3bc60b86c0efa7b2173f2ab863378df22c0)), closes [#54](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/54)
+* **deps:** add kubectl 1.37, move builder to Python 3.14, bump tools ([#55](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/55)) ([eb30eb7](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/eb30eb7dec12bf8ba10c776d3342ed7143a98b79))
+
+### Bug Fixes
+
+* **build:** pull base images from Docker Hub instead of public ECR ([c98c924](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/c98c9247bdb864739ed20920098003045d88a9e6))
+* **build:** pull base images from Docker Hub instead of public ECR ([#56](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/56)) ([b9b4c18](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/b9b4c183e1cbc5b7f6acd59db2a5f2639689757d))
+
 ## [1.12.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.11.1...v1.12.0) (2026-08-23)
 
 ### Features
