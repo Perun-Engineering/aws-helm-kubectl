@@ -3,7 +3,7 @@ ARG ALPINE_PYTHON=3.14.7-alpine3.24
 ARG ALPINE_VERSION=3.24.2
 
 ### --------- STEP 1: Build AWS CLI
-FROM public.ecr.aws/docker/library/python:${ALPINE_PYTHON} AS builder
+FROM docker.io/library/python:${ALPINE_PYTHON} AS builder
 
 ARG AWS_CLI_VERSION=2.37.6
 
@@ -29,7 +29,7 @@ RUN /aws-cli-bin/aws --version && \
     find /usr/local/aws-cli/v2/current/dist/awscli/botocore/data -name examples-1.json -delete
 
 ### --------- STEP 2: Build final image
-FROM public.ecr.aws/docker/library/alpine:${ALPINE_VERSION}
+FROM docker.io/library/alpine:${ALPINE_VERSION}
 
 ARG ALPINE_VERSION=3.24.2
 ARG AWS_CLI_VERSION=2.37.6
