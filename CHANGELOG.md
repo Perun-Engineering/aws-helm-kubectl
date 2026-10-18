@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.14.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.13.0...v1.14.0) (2026-10-18)
+
+### Features
+
+* **deps:** bump aws-cli, helm, helmfile, helm-secrets and python builder ([3fdb912](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/3fdb91240780e9923d22fa2f6248e48396cc2d9c)), closes [#57](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/57)
+* **deps:** bump aws-cli, helm, helmfile, helm-secrets and python builder ([#58](https://github.com/Perun-Engineering/aws-helm-kubectl/issues/58)) ([33625bb](https://github.com/Perun-Engineering/aws-helm-kubectl/commit/33625bba6a283ae1a5739a777aeda51360f21431))
+
 ## [1.13.0](https://github.com/Perun-Engineering/aws-helm-kubectl/compare/v1.12.0...v1.13.0) (2026-09-30)
 
 ### Features
